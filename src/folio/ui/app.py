@@ -118,14 +118,23 @@ def _sidebar(service: Any) -> None:
                 st.rerun()
 
         st.divider()
-        st.caption(f"Embeddings: `{settings.embedding.provider}` · `{settings.embedding.model}`")
-        st.caption(f"Modelo: `{settings.llm.provider}` · `{settings.llm.model}`")
+        st.caption(
+            _provider_line("Embeddings", settings.embedding.provider, settings.embedding.model)
+        )
+        st.caption(_provider_line("Modelo", settings.llm.provider, settings.llm.model))
         st.caption(f"Índice: `{settings.vectorstore.provider}`")
 
 
 @st.cache_resource
 def _get_service() -> Any:
     return build_service(load_settings())
+
+
+def _provider_line(label: str, provider: str, model: str) -> str:
+    """Hide model names that the selected provider does not use."""
+    if provider in {"extractive", "hashing"}:
+        return f"{label}: `{provider}`"
+    return f"{label}: `{provider}` · `{model}`"
 
 
 def _render_citations(citations: list[dict[str, Any]]) -> None:
