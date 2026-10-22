@@ -1,0 +1,34 @@
+# Folio configuration. Environment variables and .env override these values.
+# Secrets never belong in this file. Put FOLIO_OPENAI_API_KEY in .env.
+
+embedding:
+  # sentence-transformers (default) | openai | ollama
+  provider: sentence-transformers
+  # Multilingual MiniLM handles Spanish and English in one index.
+  model: paraphrase-multilingual-MiniLM-L12-v2
+  batch_size: 32
+
+llm:
+  # extractive works offline and quotes the retrieved passages.
+  # Switch to openai or ollama for a generated answer.
+  provider: extractive
+  model: llama3.2
+  temperature: 0.2
+  max_tokens: 800
+
+vectorstore:
+  # local (NumPy, no extra services) | chroma
+  provider: local
+  path: .folio/store
+
+retrieval:
+  top_k: 4
+  min_score: 0.0
+
+chunking:
+  size: 800
+  overlap: 120
+
+server:
+  host: 127.0.0.1
+  port: 8000

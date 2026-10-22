@@ -1,0 +1,56 @@
+# Folio API and web UI share one index volume.
+#
+#   docker compose up --build
+#
+# Generative answers with a local model (pull the models once):
+#
+#   docker compose --profile ollama up --build
+#   docker compose exec ollama ollama pull llama3.2
+#   docker compose exec ollama ollama pull nomic-embed-text
+#
+# Then set FOLIO_LLM_PROVIDER=ollama and FOLIO_EMBEDDING_PROVIDER=ollama
+# (see the README). The default below is the offline extractive answerer.
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      FOLIO_VECTORSTORE_PATH: /data
+      FOLIO_LLM_PROVIDER: ${FOLIO_LLM_PROVIDER:-extractive}
+      FOLIO_EMBEDDING_PROVIDER: ${FOLIO_EMBEDDING_PROVIDER:-hashing}
+      FOLIO_OLLAMA_BASE_URL: ${FOLIO_OLLAMA_BASE_URL:-http://ollama:11434}
+      FOLIO_OPENAI_API_KEY: ${FOLIO_OPENAI_API_KEY:-}
+      FOLIO_OPENAI_BASE_URL: ${FOLIO_OPENAI_BASE_URL:-https://api.openai.com/v1}
+    volumes:
+      - folio-data:/data
+
+  ui:
+    build: .
+    command: ["folio", "ui", "--host", "0.0.0.0", "--port", "8501"]
+    ports:
+      - "8501:8501"
+    environment:
+      FOLIO_VECTORSTORE_PATH: /data
+      FOLIO_LLM_PROVIDER: ${FOLIO_LLM_PROVIDER:-extractive}
+      FOLIO_EMBEDDING_PROVIDER: ${FOLIO_EMBEDDING_PROVIDER:-hashing}
+      FOLIO_OLLAMA_BASE_URL: ${FOLIO_OLLAMA_BASE_URL:-http://ollama:11434}
+      FOLIO_OPENAI_API_KEY: ${FOLIO_OPENAI_API_KEY:-}
+      FOLIO_OPENAI_BASE_URL: ${FOLIO_OPENAI_BASE_URL:-https://api.openai.com/v1}
+    volumes:
+      - folio-data:/data
+    depends_on:
+      - api
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  folio-data:
+  ollama:
